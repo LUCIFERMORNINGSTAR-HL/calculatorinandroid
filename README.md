@@ -34,136 +34,73 @@ Developed by : VISHWARAJ G.
 Registeration Number : 212223220125
 */
 
-package com.example.calculativour;
+package com.example.calc;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.Stack;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
-    EditText etInput;
-    String input="";
-    String display="";
-    char operator;
-    double firstNum=0;
+
+    EditText num1, num2;
+    TextView result;
+    Button btnAdd, btnSub, btnMul, btnDiv;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        etInput = findViewById(R.id.etInput);
 
-        int[] numberIds = {R.id.btn0,R.id.btn1,R.id.btn2,R.id.btn3,R.id.btn4,R.id.btn5,R.id.btn6,R.id.btn7,R.id.btn8,R.id.btn9};
+        num1 = findViewById(R.id.num1);
+        num2 = findViewById(R.id.num2);
+        result = findViewById(R.id.result);
 
-        for (int id:numberIds){
-            findViewById(id).setOnClickListener(this::onNumberClick);
+        btnAdd = findViewById(R.id.btnAdd);
+        btnSub = findViewById(R.id.btnSub);
+        btnMul = findViewById(R.id.btnMul);
+        btnDiv = findViewById(R.id.btnDiv);
+
+        btnAdd.setOnClickListener(v -> performOperation("+"));
+        btnSub.setOnClickListener(v -> performOperation("-"));
+        btnMul.setOnClickListener(v -> performOperation("*"));
+        btnDiv.setOnClickListener(v -> performOperation("/"));
+    }
+
+    private void performOperation(String op) {
+        String s1 = num1.getText().toString().trim();
+        String s2 = num2.getText().toString().trim();
+
+        if (s1.isEmpty() || s2.isEmpty()) {
+            Toast.makeText(this, "Enter both numbers", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        findViewById(R.id.btnAdd).setOnClickListener(this::onSymbolClick);
-        findViewById(R.id.btnDiv).setOnClickListener(this::onSymbolClick);
-        findViewById(R.id.btnMul).setOnClickListener(this::onSymbolClick);
-        findViewById(R.id.btnSub).setOnClickListener(this::onSymbolClick);
+        double n1 = Double.parseDouble(s1);
+        double n2 = Double.parseDouble(s2);
+        double res = 0;
 
-        findViewById(R.id.btnEq).setOnClickListener(v->calculate());
-        findViewById(R.id.btnC).setOnClickListener(v->close());
-    }
-    private void calculate() {
-        if (display.isEmpty()) return;
-
-        try {
-            double result = evaluateExpression(display);
-            display = removeTrailingZero(result);
-            etInput.setText(display);
-        } catch (Exception e) {
-            etInput.setText("Error");
-            display = "";
-        }
-    }
-    private void onNumberClick(View v){
-        Button btn = (Button)v;
-        display += btn.getText().toString();
-        etInput.setText(display);
-    }
-    private void onSymbolClick(View v){
-        Button btn = (Button)v;
-        String op = btn.getText().toString();
-
-        if (!display.isEmpty() && !isLastCharOperator()) {
-            display += op;
-            etInput.setText(display);
-        }
-    }
-    private boolean isLastCharOperator(){
-        if(display.isEmpty()) return false;
-        char last = display.charAt(display.length() - 1);
-        return last == '+' || last == '-' || last == '*' || last == '/';
-    }
-    private String removeTrailingZero(double value) {
-        if (value == (long) value)
-            return String.format("%d", (long) value);
-        else
-            return String.format("%s", value);
-    }
-    private int precedence(char op) {
-        if (op == '+' || op == '-') return 1;
-        if (op == '*' || op == '/') return 2;
-        return 0;
-    }
-
-    private double applyOp(double a, double b, char op) {
         switch (op) {
-            case '+': return a + b;
-            case '-': return a - b;
-            case '*': return a * b;
-            case '/': return b != 0 ? a / b : 0;
-        }
-        return 0;
-    }
-    private double evaluateExpression(String expr) {
-        Stack<Double> numbers = new Stack<>();
-        Stack<Character> ops = new Stack<>();
-
-        for (int i = 0; i < expr.length(); i++) {
-            char c = expr.charAt(i);
-
-            if (Character.isDigit(c) || c == '.') {
-                StringBuilder sb = new StringBuilder();
-                while (i < expr.length() && (Character.isDigit(expr.charAt(i)) || expr.charAt(i) == '.')) {
-                    sb.append(expr.charAt(i));
-                    i++;
+            case "+": res = n1 + n2; break;
+            case "-": res = n1 - n2; break;
+            case "*": res = n1 * n2; break;
+            case "/":
+                if (n2 == 0) {
+                    Toast.makeText(this, "Cannot divide by zero", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                i--; // adjust for loop increment
-                numbers.push(Double.parseDouble(sb.toString()));
-            } else if (c == '+' || c == '-' || c == '*' || c == '/') {
-                while (!ops.isEmpty() && precedence(ops.peek()) >= precedence(c)) {
-                    double b = numbers.pop();
-                    double a = numbers.pop();
-                    char op = ops.pop();
-                    numbers.push(applyOp(a, b, op));
-                }
-                ops.push(c);
-            }
+                res = n1 / n2;
+                break;
         }
 
-        while (!ops.isEmpty()) {
-            double b = numbers.pop();
-            double a = numbers.pop();
-            char op = ops.pop();
-            numbers.push(applyOp(a, b, op));
-        }
-
-        return numbers.pop();
-    }
-    private void close(){
-        input = "";
-        firstNum = 0;
-        operator = '\0';
-        display="";
-        etInput.setText("");
+        result.setText("Result: " + res);
     }
 }
 ```
@@ -171,13 +108,15 @@ public class MainActivity extends AppCompatActivity {
 ## OUTPUT
 
 #### Coding Part
-![alt text](Output_Images/Coding_Part.png)
+<img width="1920" height="1200" alt="Screenshot (202)" src="https://github.com/user-attachments/assets/2ffa997e-4fe3-47a4-8536-392f14fc0435" />
+
 
 #### Design Part
-![alt text](Output_Images/Design_Part.png)
+<img width="1920" height="1200" alt="Screenshot (203)" src="https://github.com/user-attachments/assets/480dcfb0-e45b-4d83-a340-599c36753513" />
+
 
 #### App Image
-<img src="Output_Images/App.jpg" height=400>
+<img width="144" height="321" alt="image" src="https://github.com/user-attachments/assets/64063160-b03f-4f0a-9031-1bfed16bbe41" />
 
 ## RESULT
 Thus a Simple Calculator Application using Android Studio is developed and executed successfully.
